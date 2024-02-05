@@ -1,0 +1,10 @@
+{
+    "name": "backend",
+    "version": "0.0.1",
+    "private": true,
+    "scripts": {
+        "start": "npm-run-all -p api socket",
+        "api": "node api.cjs",
+        "socket": "node socket.cjs"
+    }
+}

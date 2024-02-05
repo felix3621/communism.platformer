@@ -1,0 +1,10 @@
+{
+    "name": "platformer",
+    "version": "0.0.1",
+    "private": true,
+    "scripts": {
+        "frontend": "cd frontend && npm run dev",
+        "backend": "cd backend && npm run start",
+        "install": "cd backend && npm i && cd ../frontend && npm i"
+    }
+}
