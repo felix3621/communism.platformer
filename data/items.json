@@ -1,0 +1,13 @@
+{
+    "0": {
+        "Name": "Scythe",
+        "Description": "Weapon Of Death 2.0",
+        "Texture": "logo_Demon_mode"
+    },
+    "1": {
+        "Name": "Potato",
+        "Description": "Its a Potato what dide you expext",
+        "Texture": "",
+        "Damage": 1
+    }
+}

@@ -6,5 +6,8 @@
         "frontend": "cd frontend && npm run dev",
         "backend": "cd backend && npm run start",
         "install": "cd backend && npm i && cd ../frontend && npm i"
+    },
+    "dependencies": {
+        "multer": "^1.4.5-lts.1"
     }
 }

@@ -1,4 +1,3 @@
-var fs = require('fs');
 const logger = require('./logger.cjs');
 
 module.exports = (process, trace) => {
