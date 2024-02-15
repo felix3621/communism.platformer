@@ -1,1 +1,10 @@
-{}
+{
+    "0": {
+        "Name": "DirtPath",
+        "Description": "A Path Made Of Dirt",
+        "Height": 1,
+        "Width": 1,
+        "Texture": "DirtPath",
+        "Type":"ConnectedTexture"
+    }
+}

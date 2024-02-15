@@ -20,6 +20,7 @@ const storage = multer.diskStorage({
                 } else {
                     data[req.params.addr] = file.originalname;
                     fa.write("./data/textures.json", JSON.stringify(data, null, 4))
+                    logger.info(req.user.username + " added a new image, key: "+req.params.addr+", texture_name: "+file.originalname)
                     cb(null, file.originalname);
                 }
 

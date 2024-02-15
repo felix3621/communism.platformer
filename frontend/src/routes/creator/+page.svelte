@@ -76,18 +76,53 @@
     :global(.TextureDropDown *:not(div)) {
         float: left;
     }
-    #imagePreview {
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%,-50%);
-        max-height: 80%;
-        max-width: 80%;
+    #MapDisplay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        overflow: hidden;
+    }
+    #MapGrid {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        overflow: hidden;
+        background-image: url(/images/assets/Grid.png);
+    }
+    #MapLayers {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+    }
+    :global(#MapLayers > div) {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+    }
+    :global(svg) {
+        position: absolute;
+        z-index: 110;
     }
 </style>
 <div id="Background"></div>
+<div id="MapDisplay">
+    <div id="MapLayers"></div>
+    <div id="MapGrid"></div>
+</div>
 <div id="Tabs">
-    <div id="MapCreator"></div>
+    <div id="MapCreator">
+        <div id="MapInfo"></div>
+        <div id="MapLayersSelector"></div>
+        <div id="MapAsstSelector"></div>
+    </div>
     <div id="AssetCreator"></div>
     <div id="ItemsCreator"></div>
     <div id="EnemyCreator"></div>
@@ -115,7 +150,10 @@
         Textures: {}
     }
     var MapPrefab = {
-
+        Name:"No-Name",
+        Description:"",
+        BaseTexture:"Grass",
+        Layers:[]
     }
     var AssetPrefab = {
         Name:"",
@@ -142,7 +180,187 @@
         Name:"",
         Description:""
     }
+    var MapDisplay = null;
+    function MapsTab() {
+        let Tab = document.getElementById("MapCreator");
+        let TabItemHolder = document.getElementById("TabItems");
+        TabItemHolder.innerHTML = "<h1 style='margin:0;text-align:center;'>Maps</h1><hr>";
+        let AddBtn = document.createElement("Button");
+        AddBtn.innerHTML = "Add";
+        AddBtn.addEventListener("click",()=>{Info.Map["new"+NewAmount] = {...MapPrefab}; NewAmount++; MapsTab()});
+        TabItemHolder.appendChild(AddBtn);
+        for (let key in Info.Map) {
+            if (Info.Map[key].State != "remove") {
+                let Item = document.createElement("div");
+                TabItemHolder.appendChild(Item);
+                Item.classList.add("Item");
 
+                if (Info.Map[key].Name) { // Do it have a name property then use it else dont
+                    var Name = document.createElement("h1");
+                    Name.innerHTML = Info.Map[key].Name;
+                    Item.appendChild(Name);
+                } else {
+                    var Name = document.createElement("h1");
+                    Name.innerHTML = key;
+                    Item.appendChild(Name);
+                }
+                Name.style.width = "90%";
+                Name.style.float = "left";
+                Name.style.maxWidth = "90%";
+                Name.style.overflow = "hidden";
+                // Remove Button
+                let RemoveBtn = document.createElement("h1");
+                RemoveBtn.innerHTML = "&#128465";
+                // Remove Entery
+                RemoveBtn.addEventListener("click", () => {Info.Map[key].State = "remove";});
+                RemoveBtn.style.width = "10%";
+                RemoveBtn.style.float = "right";
+                Item.appendChild(RemoveBtn);
+                
+                Item.addEventListener("click", ()=>{
+                    setTimeout(()=>{
+                        if (Info.Map[key].State != "remove") {
+                            // Click Event
+                        } else {
+                            MapsTab();
+                        }
+                        
+                    },100);
+                });
+                if (Info.Map[key].Description) { // If Description property then use it
+                    let Description = document.createElement("p");
+                    Description.innerHTML = Info.Map[key].Description;
+                    Description.style.float = "left";
+                    Item.appendChild(Description);
+                }
+            }
+        }
+        console.log(Info.Map)
+        GenerateMap(Info.Map["0"], 0,0, 2);
+    }
+    function GenerateMap(Map,X,Y, zoom) {
+        MapDisplay.style.display = "block";
+        if (Map.BaseTexture != null && Info.Textures[Map.BaseTexture]) {
+            MapDisplay.style.backgroundImage = "url(/images/assets/"+Info.Textures[Map.BaseTexture]+")" ;
+            MapDisplay.style.backgroundSize = zoom + "%";
+            MapDisplay.style.backgroundColor = "";
+        } else {
+            MapDisplay.style.backgroundImage = "";
+            MapDisplay.style.backgroundColor = "rgb(0,0,0)";
+        }
+        document.getElementById("MapGrid").style.backgroundSize = zoom + "%";
+
+        let MapLayers = document.getElementById("MapLayers");
+        for (let i = 0; i < Map.Layers.length; i++) {
+            for (let key in Map.Layers[i]) {
+                let Asset = FindAssetByName(key);
+                let Layer = document.createElement("div");
+                // What Asset Type Is It
+                console.log(Asset, key)
+                if (Asset && Asset.Type == "ConnectedTexture") {
+                    let Bodys = FindAllConnectedPoints([...Map.Layers[i][key]]);
+                    for (let j = 0; j < Bodys.length; j++) {
+                        let Svg = document.createElement("svg");
+                        Svg.setAttribute('xmlns', "http://www.w3.org/2000/svg");
+                        Layer.appendChild(Svg);
+                        let SvgPath = document.createElement("path");
+                        Svg.appendChild(SvgPath);
+                        SvgPath.style.backgroundColor = "white";
+                        SvgPath.setAttribute('d', createSVGPath(Bodys[j]));
+                        SvgPath.innerHTML = "";
+                        Svg.style.display = "none";
+                        Svg.offsetHeight; // Trigger reflow
+                        Svg.style.display = "block";
+                        Svg.innerHTML = Svg.innerHTML + " ";
+                        let updateEvent = new Event("update");
+                        Svg.dispatchEvent(updateEvent);
+                    }
+                } else {
+
+                }
+                MapLayers.appendChild(Layer);
+            }
+        }
+    }
+    // Function to create an SVG path with rectangles at each position
+    function createSVGPath(positions, cellSize = 100) {
+        positions.sort(sortByXY);
+        return "M" + positions.map(({ x, y }) => `${x*100} ${y*100}`).join(' L ') + ' Z';
+    }
+
+    // Custom sorting function
+    function sortByXY(a, b) {
+        if (a.x !== b.x) {
+            return a.x - b.x; // Sort by x first
+        } else {
+            return a.y - b.y; // If x values are equal, sort by y
+        }
+    }
+    function FindAssetByName(Name) {
+        for (let key in Info.Assets) {
+            console.log(Info.Assets[key])
+            if (Info.Assets[key].Name == Name) {
+                return Info.Assets[key];
+            }
+        }
+        return null;
+    }
+    function FindAllConnectedPoints(PositionArray) {
+        let ReturnArrays = PositionArray.length > 0 && Array.isArray(PositionArray[0]) ? PositionArray[0] : [];
+        if (PositionArray.length > 0 && Array.isArray(PositionArray[0])) {
+            PositionArray.splice(0,1);
+        }
+        let Continue = false;
+        for (let i = 0; i < PositionArray.length; i++) {
+            let NewArray = true;
+            for (let j = 0; i < PositionArray.length && j < ReturnArrays.length; j++) {
+                console.log(PositionArray.length,i,j)
+                if (IsPositionCloseInArray(ReturnArrays[j],PositionArray[i])) {
+                    ReturnArrays[j].push(PositionArray[i]);
+                    NewArray = false;
+                    Continue = true;
+                    PositionArray.splice(i,1);
+                    i = Math.max((i-1),0);
+                }
+            }
+            if (NewArray) {
+                ReturnArrays.push([PositionArray[i]]);
+                Continue = true;
+                PositionArray.splice(i,1);
+                i--;   
+            }
+        }
+        for (let i = 0; i < ReturnArrays.length; i++) {
+            for (let j = 0; i < ReturnArrays.length && j < ReturnArrays.length; j++) {
+                if (j!=i) {
+                    for (let l = 0; i < ReturnArrays.length && j < ReturnArrays.length && l < ReturnArrays[j].length; l++) {
+                        if (IsPositionCloseInArray(ReturnArrays[i],ReturnArrays[j][l])) {
+                            ReturnArrays[i] = [...ReturnArrays[i],...ReturnArrays[j]];
+                            ReturnArrays.splice(j,1);
+                            j = Math.max((j-1),0);
+                            i = Math.max((i-1),0);
+                            l = 1000000000000000;
+                        }
+                    }
+                }
+            }
+        }
+        if (Continue) {
+            ReturnArrays = [ReturnArrays,...PositionArray];
+            ReturnArrays = FindAllConnectedPoints(ReturnArrays);
+        }
+        
+        return ReturnArrays;
+    }
+    function IsPositionCloseInArray(Array,Position) {
+        for (let i = 0; i < Array.length; i++) {
+            console.log(Position);
+            if ((Array[i].x+1 >= Position.x && Position.x >= Array[i].x-1) && (Array[i].y+1 >= Position.y && Position.y >= Array[i].y-1) && (Array[i].x == Position.x || Array[i].y == Position.y)) {
+                return true;
+            }
+        }
+        return false;
+    }
     onMount(async() => {
         let user = await fetch(window.location.origin+'/api/account/login', {
             method: 'POST',
@@ -157,6 +375,7 @@
         } else {
             window.location.href = "/";
         }
+        MapDisplay = document.getElementById("MapDisplay");
         GetInfo();
         SetTab(2);
         document.getElementById("UploadImageBtn").addEventListener("change", (e) => {
@@ -231,13 +450,12 @@
     }
     let NewAmount = 0;
     function UpdateTabItems(Items, Tab, Type) {
+        MapDisplay.style.display = "none";
         let TabItemHolder = document.getElementById("TabItems");
         TabItemHolder.innerHTML = "<h1 style='margin:0;text-align:center;'>Entries</h1><hr>";
         let AddBtn = document.createElement("Button");
         AddBtn.innerHTML = "Add";
-        if (Type == "Map") {
-            AddBtn.addEventListener("click",()=>{Items["new"+NewAmount] = {...MapPrefab}; Tab.innerHTML = ""; Tab.appendChild(GenerateEntries(Items["new"+NewAmount])); NewAmount++; UpdateTabItems(Items,Tab,Type)});
-        } else if (Type == "Assets") {
+        if (Type == "Assets") {
             AddBtn.addEventListener("click",()=>{Items["new"+NewAmount] = {...AssetPrefab}; Tab.innerHTML = ""; Tab.appendChild(GenerateEntries(Items["new"+NewAmount])); NewAmount++; UpdateTabItems(Items,Tab,Type)});
         } else if (Type == "Items") {
             AddBtn.addEventListener("click",()=>{Items["new"+NewAmount] = {...ItemPrefab}; Tab.innerHTML = ""; Tab.appendChild(GenerateEntries(Items["new"+NewAmount])); NewAmount++; UpdateTabItems(Items,Tab,Type)});
@@ -353,9 +571,6 @@
             ImagePreview.style.display = "none";
         } 
         
-    }
-    function MapsTab() {
-        UpdateTabItems(Info.Map, document.getElementById("Tabs").children[0], "Map");
     }
     function AssetsTab() {
         UpdateTabItems(Info.Assets, document.getElementById("Tabs").children[1], "Assets");

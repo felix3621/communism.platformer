@@ -44,12 +44,15 @@ router.post('/', (req, res) => {
             if (req.body.assets) {
                 let data = JSON.parse(fa.read("./data/assets.json"))
                 let keys = Object.keys(data)
-                let newKey = Number(keys[keys.length - 1])+1
+                let newKey = 0
+                if (keys.length)
+                    newKey = Number(keys[keys.length - 1])+1
 
                 for (let key in req.body.assets) {
                     if (key.startsWith("new")) {
                         delete req.body.assets[key].State
                         data[newKey] = req.body.assets[key]
+                        logger.info(req.user.username + " added a new asset, key: "+newKey+", data: "+JSON.stringify(req.body.assets[key]))
                         newKey++
                     } else if (req.body.assets[key].State == "change") {
                         if (data[key] == null) {
@@ -57,6 +60,7 @@ router.post('/', (req, res) => {
                             throw new error()
                         } else {
                             delete req.body.assets[key].State
+                            logger.info(req.user.username + " modified a asset, key: "+key+", original_data: "+JSON.stringify(data[key])+", new_data: "+json.stringify(req.body.assets[key]))
                             data[key] = req.body.assets[key]
                         }
                     } else if (req.body.assets[key].State == "remove") {
@@ -64,6 +68,7 @@ router.post('/', (req, res) => {
                             res.status(404).send("Key not found")
                             throw new error()
                         } else {
+                            logger.info(req.user.username + " deleted a asset, key: "+newKey+", original_data: "+JSON.stringify(data[key]))
                             delete data[key]
                         }
                     }
@@ -73,12 +78,15 @@ router.post('/', (req, res) => {
             if (req.body.items) {
                 let data = JSON.parse(fa.read("./data/items.json"))
                 let keys = Object.keys(data)
-                let newKey = Number(keys[keys.length - 1])+1
+                let newKey = 0
+                if (keys.length)
+                    newKey = Number(keys[keys.length - 1])+1
 
                 for (let key in req.body.items) {
                     if (key.startsWith("new")) {
                         delete req.body.items[key].State
                         data[newKey] = req.body.items[key]
+                        logger.info(req.user.username + " added a new item, key: "+newKey+", data: "+JSON.stringify(req.body.items[key]))
                         newKey++
                     } else if (req.body.items[key].State == "change") {
                         if (data[key] == null) {
@@ -86,6 +94,7 @@ router.post('/', (req, res) => {
                             throw new error()
                         } else {
                             delete req.body.items[key].State
+                            logger.info(req.user.username + " modified a item, key: "+key+", original_data: "+JSON.stringify(data[key])+", new_data: "+json.stringify(req.body.items[key]))
                             data[key] = req.body.items[key]
                         }
                     } else if (req.body.items[key].State == "remove") {
@@ -93,6 +102,7 @@ router.post('/', (req, res) => {
                             res.status(404).send("Key not found")
                             throw new error()
                         } else {
+                            logger.info(req.user.username + " deleted a item, key: "+newKey+", original_data: "+JSON.stringify(data[key]))
                             delete data[key]
                         }
                     }
@@ -102,12 +112,15 @@ router.post('/', (req, res) => {
             if (req.body.class) {
                 let data = JSON.parse(fa.read("./data/class.json"))
                 let keys = Object.keys(data)
-                let newKey = Number(keys[keys.length - 1])+1
+                let newKey = 0
+                if (keys.length)
+                    newKey = Number(keys[keys.length - 1])+1
 
                 for (let key in req.body.class) {
                     if (key.startsWith("new")) {
                         delete req.body.class[key].State
                         data[newKey] = req.body.assets[key]
+                        logger.info(req.user.username + " added a new class, key: "+newKey+", data: "+JSON.stringify(req.body.class[key]))
                         newKey++
                     } else if (req.body.class[key].State == "change") {
                         if (data[key] == null) {
@@ -115,6 +128,7 @@ router.post('/', (req, res) => {
                             throw new error()
                         } else {
                             delete req.body.class[key].State
+                            logger.info(req.user.username + " modified a class, key: "+key+", original_data: "+JSON.stringify(data[key])+", new_data: "+json.stringify(req.body.class[key]))
                             data[key] = req.body.class[key]
                         }
                     } else if (req.body.class[key].State == "remove") {
@@ -122,6 +136,7 @@ router.post('/', (req, res) => {
                             res.status(404).send("Key not found")
                             throw new error()
                         } else {
+                            logger.info(req.user.username + " deleted a class, key: "+newKey+", original_data: "+JSON.stringify(data[key]))
                             delete data[key]
                         }
                     }
@@ -131,12 +146,15 @@ router.post('/', (req, res) => {
             if (req.body.enemy) {
                 let data = JSON.parse(fa.read("./data/enemy.json"))
                 let keys = Object.keys(data)
-                let newKey = Number(keys[keys.length - 1])+1
+                let newKey = 0
+                if (keys.length)
+                    newKey = Number(keys[keys.length - 1])+1
 
                 for (let key in req.body.enemy) {
                     if (key.startsWith("new")) {
                         delete req.body.enemy[key].State
                         data[newKey] = req.body.enemy[key]
+                        logger.info(req.user.username + " added a new enemy, key: "+newKey+", data: "+JSON.stringify(req.body.enemy[key]))
                         newKey++
                     } else if (req.body.enemy[key].State == "change") {
                         if (data[key] == null) {
@@ -144,6 +162,7 @@ router.post('/', (req, res) => {
                             throw new error()
                         } else {
                             delete req.body.enemy[key].State
+                            logger.info(req.user.username + " modified a enemy, key: "+key+", original_data: "+JSON.stringify(data[key])+", new_data: "+json.stringify(req.body.enemy[key]))
                             data[key] = req.body.enemy[key]
                         }
                     } else if (req.body.enemy[key].State == "remove") {
@@ -151,6 +170,7 @@ router.post('/', (req, res) => {
                             res.status(404).send("Key not found")
                             throw new error()
                         } else {
+                            logger.info(req.user.username + " deleted a enemy, key: "+newKey+", original_data: "+JSON.stringify(data[key]))
                             delete data[key]
                         }
                     }
@@ -160,12 +180,15 @@ router.post('/', (req, res) => {
             if (req.body.map) {
                 let data = JSON.parse(fa.read("./data/map.json"))
                 let keys = Object.keys(data)
-                let newKey = Number(keys[keys.length - 1])+1
+                let newKey = 0
+                if (keys.length)
+                    newKey = Number(keys[keys.length - 1])+1
 
                 for (let key in req.body.map) {
                     if (key.startsWith("new")) {
                         delete req.body.map[key].State
                         data[newKey] = req.body.map[key]
+                        logger.info(req.user.username + " added a new map, key: "+newKey+", data: "+JSON.stringify(req.body.map[key]))
                         newKey++
                     } else if (req.body.map[key].State == "change") {
                         if (data[key] == null) {
@@ -173,6 +196,7 @@ router.post('/', (req, res) => {
                             throw new error()
                         } else {
                             delete req.body.map[key].State
+                            logger.info(req.user.username + " modified a map, key: "+key+", original_data: "+JSON.stringify(data[key])+", new_data: "+json.stringify(req.body.map[key]))
                             data[key] = req.body.map[key]
                         }
                     } else if (req.body.map[key].State == "remove") {
@@ -180,6 +204,7 @@ router.post('/', (req, res) => {
                             res.status(404).send("Key not found")
                             throw new error()
                         } else {
+                            logger.info(req.user.username + " deleted a map, key: "+newKey+", original_data: "+JSON.stringify(data[key]))
                             delete data[key]
                         }
                     }
